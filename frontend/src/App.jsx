@@ -109,7 +109,7 @@ function App() {
         <header className="text-center space-y-4">
           <div className="flex justify-center items-center gap-2 text-primary">
             <Search className="w-10 h-10" />
-            <h1 className="text-4xl font-bold tracking-tight">Jobscan Clone</h1>
+            <h1 className="text-4xl font-bold tracking-tight">CV Scan</h1>
           </div>
           <p className="text-muted-foreground text-lg">
             Optimize your resume for the ATS with AI-powered insights.
