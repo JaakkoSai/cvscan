@@ -20,9 +20,52 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
+  const [refinementComment, setRefinementComment] = useState("");
+  const [refining, setRefining] = useState(false);
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
+    setError(null);
+  };
+
+  const handleRefinement = async () => {
+    if (!result || !refinementComment) return;
+    setRefining(true);
+
+    const formData = new FormData();
+    formData.append("resume_text", result.text);
+    formData.append(
+      "missing_keywords",
+      JSON.stringify(result.analysis.missing_keywords || [])
+    );
+    formData.append(
+      "hiring_company",
+      result.analysis.hiring_company_name || "the company"
+    );
+    formData.append(
+      "target_country",
+      result.analysis.target_country || "International"
+    );
+    formData.append("user_feedback", refinementComment);
+
+    try {
+      const response = await axios.post(
+        "http://localhost:8000/refine",
+        formData
+      );
+
+      // Update the optimization result with the new one
+      setResult((prev) => ({
+        ...prev,
+        optimization: response.data.optimization,
+      }));
+      setRefinementComment(""); // Clear comment
+    } catch (err) {
+      console.error(err);
+      setError("Failed to refine resume. Please try again.");
+    } finally {
+      setRefining(false);
+    }
   };
 
   const handleAnalyze = async () => {
@@ -257,6 +300,39 @@ function App() {
                   }
                   isFullText={!!result.optimization.full_modified_text}
                 />
+
+                {/* Refinement Section */}
+                <Card className="mt-8 border-primary/20 bg-primary/5">
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
+                        !
+                      </span>
+                      Refine with Feedback
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <p className="text-sm text-muted-foreground">
+                      Not happy with the suggestion? Want to emphasize something
+                      specific? Tell the AI what to change, and it will re-write
+                      the optimization for you.
+                    </p>
+                    <Textarea
+                      placeholder="E.g., 'I don't actually know Java, please remove it.' or 'Emphasize my leadership in the Nokia project more.'"
+                      value={refinementComment}
+                      onChange={(e) => setRefinementComment(e.target.value)}
+                      className="bg-background"
+                    />
+                    <div className="flex justify-end">
+                      <Button
+                        onClick={handleRefinement}
+                        disabled={refining || !refinementComment.trim()}
+                      >
+                        {refining ? "Refining..." : "Update Optimization"}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             )}
           </div>

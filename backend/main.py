@@ -63,6 +63,29 @@ async def analyze_cv(
         "optimization": optimization_suggestion
     }
 
+@app.post("/refine")
+async def refine_cv(
+    resume_text: str = Form(...),
+    missing_keywords: str = Form("[]"), # JSON string
+    hiring_company: str = Form(...),
+    target_country: str = Form(...),
+    user_feedback: str = Form(...)
+):
+    try:
+        keywords_list = json.loads(missing_keywords)
+    except:
+        keywords_list = []
+
+    optimization = optimize_resume(
+        resume_text=resume_text, 
+        missing_keywords=keywords_list, 
+        hiring_company_name=hiring_company, 
+        target_country=target_country,
+        user_feedback=user_feedback
+    )
+    
+    return {"optimization": optimization}
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
