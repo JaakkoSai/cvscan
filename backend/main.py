@@ -16,6 +16,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.get("/")
+def read_root():
+    return {"message": "Jobscan API is running! Send POST requests to /analyze"}
+
 @app.post("/analyze")
 async def analyze_cv(
     file: UploadFile = File(...), 
@@ -47,8 +51,11 @@ async def analyze_cv(
     # 3. Optimize (Optional: Only if score is low or missing keywords exist)
     optimization_suggestion = ""
     missing_keywords = analysis.get('missing_keywords', [])
+    hiring_company = analysis.get('hiring_company_name', 'the target company')
+    target_country = analysis.get('target_country', 'International')
+    
     if missing_keywords:
-        optimization_suggestion = optimize_resume(resume_text, missing_keywords)
+        optimization_suggestion = optimize_resume(resume_text, missing_keywords, hiring_company, target_country)
 
     return {
         "text": resume_text,

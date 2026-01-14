@@ -11,10 +11,12 @@ def analyze_match(resume_text: str, job_description: str) -> dict:
     prompt = f"""
     You are an expert ATS (Applicant Tracking System) scanner. 
     
-    1. Extract top 10 hard skills/keywords from the Job Description.
-    2. Check if these keywords exist in the Resume.
-    3. Calculate a match score (0-100).
-    4. Provide a list of missing keywords.
+    1. Extract the **Hiring Company Name** from the Job Description (if not explicitly stated, infer it or say "Unknown").
+    2. Extract the **Target Country** for the role (e.g. "Finland", "USA", "Remote"). If not stated, infer from the location or language. Default to "International".
+    3. Extract top 10 hard skills/keywords from the Job Description.
+    4. Check if these keywords exist in the Resume.
+    5. Calculate a match score (0-100).
+    6. Provide a list of missing keywords.
 
     Job Description:
     {job_description}
@@ -24,6 +26,8 @@ def analyze_match(resume_text: str, job_description: str) -> dict:
 
     Output JSON format:
     {{
+        "hiring_company_name": "Name or Unknown",
+        "target_country": "Country Name",
         "match_score": 75,
         "found_keywords": ["python", "sql"],
         "missing_keywords": ["aws", "docker"],
@@ -33,7 +37,7 @@ def analyze_match(resume_text: str, job_description: str) -> dict:
 
     try:
         response = client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="gpt-5.2",
             messages=[{"role": "user", "content": prompt}],
             response_format={ "type": "json_object" }
         )
